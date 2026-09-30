@@ -2,6 +2,7 @@ import asyncio
 import logging
 import json
 import os
+from aiohttp import web
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
@@ -420,9 +421,23 @@ async def search_book(message: Message, state: FSMContext):
         await message.answer(TEXTS['uz']['book_not_found'])
 
 # -------------------------------------------------------------------
-# 7. ISHGA TUSHIRISH
+# 7. RENDER UCHUN WEB SERVER VA ISHGA TUSHIRISH
 # -------------------------------------------------------------------
+async def handle(request):
+    return web.Response(text="Bot 24/7 ishlamoqda!")
+
 async def main():
+    # Render portini tinglovchi background veb-server
+    app = web.Application()
+    app.router.add_get("/", handle)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
+    # Telegram Bot Polling
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
